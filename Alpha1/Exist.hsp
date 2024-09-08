@@ -1,0 +1,2 @@
+exist ""+dir_cur+"\\WebView2Loader.dll"
+if strsize=-1{dialog "WebView2Loader.dll‚ªŒ©‚Â‚©‚è‚Ü‚¹‚ñ":end}

@@ -1,0 +1,23 @@
+dim RECT, 4
+
+CreatePopupMenu
+hMenu.0 = stat
+	AppendMenu hMenu.0, 0, $100, "ページをスクリーンショット"
+	AppendMenu hMenu.0, 1, $110, "SPR-1 インタプリタ通常版を起動"
+	AppendMenu hMenu.0, 1, $120, "Music Player"
+	AppendMenu hMenu.0, 1, $200, "更新確認"
+	AppendMenu hMenu.0, 0, $210, "About "+ApplicationName
+	AppendMenu hMenu.0, 0, $220, ""+ApplicationName+"を終了"
+
+stop
+
+*RECT_OpenMenu
+GetWindowRect StartButton, varptr(RECT)
+TrackPopupMenu hMenu.0, $100, RECT.2, RECT.1, 0, hwnd, 0
+if stat = $100 : gosub *CMD_CAPTURE
+if stat = $110 : dialog "まだ"
+if stat = $120 : dialog "まだ"
+if stat = $200 : dialog "まだ"
+if stat = $210 : gosub *CMD_About
+if stat = $220 : goto *Close
+stop

@@ -1,0 +1,73 @@
+*EVENT_TITLE
+	gosub *EVENT_URL
+	pView = wparam : gosub *TAB_UPDATE
+	return
+
+*EVENT_COMPLETE
+	gosub *EVENT_URL
+	pView = wparam : gosub *TAB_UPDATE
+	return
+
+*EVENT_FULLSCR
+	return
+	
+*EVENT_NEWWND
+	gosub *EVENT_URL
+	if ( lparam == 0 || bAdd != 0 ){ return }
+	bAdd = 1
+	pNewWnd = lparam
+	if ( CCall2(pNewWnd, WV2NewWnd_GetDeferral, 1, varptr(pDef)) == 0 ){
+		PostMessage hWnd0, 0x9004, 0, 0
+		bAdd = 1
+	}
+	return
+
+*EVENT_NEWWND2
+	gosub *EVENT_URL
+	if ( CCall2(pNewWnd, WV2NewWnd_put_Handled, 1, 1) == 0 ){
+		if ( CCall2(pNewWnd, WV2NewWnd_get_Uri, 1, varptr(p1)) == 0 ){
+			gosub *TAB_ADD2
+			ret = CCall2(pNewWnd, WV2NewWnd_put_NewWindow, 1, curView)
+			gosub *EVENT_SET
+			gosub *TAB_SELECT
+		}
+	}
+	ret = CCall2(pDef, WV2Deferral_Complete, 0)
+	WebView2_Release pDef
+	bAdd = 0
+	return
+
+*EVENT_SET
+	pTabInfo = 0
+	pTabInfo = HeapAlloc(GetProcessHeap(), 8, WV2_DATA_SIZE * 28 + 8)
+	if ( pTabInfo == 0 ){ return }
+	dupptr dp, pTabInfo, WV2_DATA_SIZE * 4, 4
+	WebView2_EventInit WV2_EVENT_TITLECHANGED, hWnd0, 0x9000, dp
+	ret = CCall2(curView, WV2_add_DocumentTitleChanged, 2, dp, varptr(dp(6)))
+
+	dupptr dp, WV2_DATA_SIZE * 4 + pTabInfo, WV2_DATA_SIZE * 4, 4
+	WebView2_EventInit WV2_EVENT_NAVIGATIONCOMPLETED, hWnd0, 0x9001, dp
+	ret = CCall2(curView, WV2_add_NavigationCompleted, 2, dp, varptr(dp(6)))
+
+	dupptr dp, WV2_DATA_SIZE * 8 + pTabInfo, WV2_DATA_SIZE * 4, 4
+	WebView2_EventInit WV2_EVENT_FULLSCREEN, hWnd0, 0x9002, dp
+	ret = CCall2(curView, WV2_add_FullScrChanged, 2, dp, varptr(dp(6)))
+
+	dupptr dp, WV2_DATA_SIZE * 12 + pTabInfo, WV2_DATA_SIZE * 4, 4
+	WebView2_EventInit WV2_EVENT_NEWWINDOW, hWnd0, 0x9003, dp
+	ret = CCall2(curView, WV2_add_NewWindowRequested, 2, dp, varptr(dp(6)))
+
+	dupptr dpCtrl, WV2_DATA_SIZE * 28 + pTabInfo, 8, 4
+	dpCtrl(0) = curCtrl, curView
+
+	tci(0) = 8 : tci(6) = pTabInfo
+	sendmsg hTab, TCM_SETITEMW, iTab, varptr(tci)
+	return
+	
+*EVENT_URL
+	if ( pTabInfo == 0 ){ return }
+	p1 = (GetWindowTextLengthW(hEditUrl) + 1) * 2
+	sdim bufTmp, p1
+	GetWindowText hEditUrl, varptr(bufTmp), p1
+	urlTmp = bufTmp
+	return
