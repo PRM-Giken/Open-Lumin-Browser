@@ -1,0 +1,34 @@
+#include "hsp3utf.as"
+#include "user32.as"
+//---------------------------------------------------------//
+
+//init
+//---------------------------------------------------------//
+#define ApplicationName "OpenLumin"
+#define ApplicationVersion "Alpha 1 "+__date__+" "+__time__
+screen 0,640,480:title ApplicationName
+#include "Exist.hsp"
+//---------------------------------------------------------//
+
+//WebView Load
+//---------------------------------------------------------//
+#include "WebView_Config.hsp"
+//---------------------------------------------------------//
+
+//Graphic
+//---------------------------------------------------------//
+#include "Graphic.hsp"
+#include "Rect.hsp"
+//Ç±Ç±Ç≈èÄîıäÆóπ
+//---------------------------------------------------------//
+
+//Event
+//---------------------------------------------------------//
+#include "EVENT_WM.hsp"
+#include "EVENT_CMD.hsp"
+#include "EVENT_Tab.hsp"
+#include "EVENT_WebView.hsp"
+//---------------------------------------------------------//
+
+*Close
+	end:end
