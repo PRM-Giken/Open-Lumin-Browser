@@ -1,0 +1,50 @@
+#packopt icon "Logo.ico"
+#packopt version "Build.dat"
+
+#include "hsp3utf.as"
+#include "user32.as"
+
+#uselib "gdi32.dll"
+#uselib "user32.dll"
+#func SetProcessDPIAware "SetProcessDPIAware"
+//---------------------------------------------------------//
+
+//init
+//---------------------------------------------------------//
+#define ApplicationName "OpenLumin"
+#define ApplicationVersion "Alpha 2 ["+__date__+__time__+"]"
+#define InternalVersion "2"
+screen 0,640,480:title ApplicationName
+#include "Exist.hsp"
+#include "Loadini.hsp"
+Loadini "Config.ini"
+//---------------------------------------------------------//
+
+//WebView Load
+//---------------------------------------------------------//
+#include "WebView_Config.hsp"
+//---------------------------------------------------------//
+
+//Graphic
+//---------------------------------------------------------//
+#include "Graphic.hsp"
+#include "Rect.hsp"
+//Ç±Ç±Ç≈èÄîıäÆóπ
+//---------------------------------------------------------//
+
+//Event
+//---------------------------------------------------------//
+#include "EVENT_WM.hsp"
+#include "EVENT_CMD.hsp"
+#include "EVENT_Tab.hsp"
+#include "EVENT_WebView.hsp"
+//---------------------------------------------------------//
+
+//í«â¡ã@î\
+//---------------------------------------------------------//
+#include "SPR.hsp"
+//---------------------------------------------------------//
+
+*Close
+if wparam!=0{gsel wparam,-1:stop}
+end:end

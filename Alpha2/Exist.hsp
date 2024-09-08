@@ -1,0 +1,5 @@
+exist ""+dir_cur+"\\WebView2Loader.dll"
+if strsize=-1{dialog "WebView2Loader.dll‚ªŒ©‚Â‚©‚è‚Ü‚¹‚ñ":end}
+
+exist ""+dir_cur+"\\Config.ini"
+if strsize=-1{dialog "Config.ini‚ªŒ©‚Â‚©‚è‚Ü‚¹‚ñ":end}
