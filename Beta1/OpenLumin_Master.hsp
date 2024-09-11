@@ -1,0 +1,50 @@
+#packopt icon "Logo.ico"
+#packopt version "Build.dat"
+
+#include "hsp3utf.as"
+#include "user32.as"
+#include "shell32.as"
+#include "hspinet.as"
+
+//init
+//---------------------------------------------------------//
+#define ApplicationName "Open Lumin WebBrowser"
+#define ApplicationVersion "Beta 1 ["+__date__+" "+__time__+"]"
+#define InternalVersion "Beta1"
+if __hspver__!=14089{end} //HSP3.7beta9ŒÀ’è
+
+#include "init.hsp"
+#include "Exist.hsp"
+#include "Loadini.hsp"
+Loadini "Config.ini"
+
+//WebView Load
+//---------------------------------------------------------//
+#include "WebView_Config.hsp"
+
+//HSC
+//---------------------------------------------------------//
+gosub *HSC_init
+
+//Graphic
+//---------------------------------------------------------//
+#include "Graphic.hsp"
+#include "Rect.hsp"
+stop
+
+//Event
+//---------------------------------------------------------//
+#include "EVENT_WM.hsp"
+#include "EVENT_CMD.hsp"
+#include "EVENT_Tab.hsp"
+#include "EVENT_WebView.hsp"
+#include "EVENT_USER.hsp"
+
+//’Ç‰Á‹@”\
+//---------------------------------------------------------//
+#include "SPR.hsp"
+#include "HSC_init.hsp"
+
+*Close
+if wparam!=0{gsel wparam,-1:stop}
+end:end

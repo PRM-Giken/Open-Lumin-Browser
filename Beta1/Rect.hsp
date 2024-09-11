@@ -1,0 +1,25 @@
+dim RECT, 4
+
+CreatePopupMenu
+hMenu.0 = stat
+	AppendMenu hMenu.0, 0, $100, "ページをスクリーンショット [ISMemoria互換]"
+	AppendMenu hMenu.0, 0, $200, "SPR-1 インタプリタ通常版を起動"
+	AppendMenu hMenu.0, 0, $210, "PRM技研通信"
+	AppendMenu hMenu.0, 0, $220, "更新確認"
+	AppendMenu hMenu.0, 0, $230, "About "+ApplicationName
+	AppendMenu hMenu.0, 0, $240, "プロジェクトについて・権利表記"
+	AppendMenu hMenu.0, 0, $500, "終了"
+
+stop
+
+*RECT_OpenMenu
+GetWindowRect StartButton, varptr(RECT)
+TrackPopupMenu hMenu.0, $100, RECT.2, RECT.1, 0, hwnd, 0
+if stat = $100 : gosub *CMD_CAPTURE
+if stat = $200 : gosub *SPR_Window
+if stat = $210 : gosub *EVENT_GetTexts
+if stat = $220 : gosub *EVENT_Update
+if stat = $230 : gosub *CMD_About
+if stat = $240 : dialog ""+ApplicationName+" プロジェクトは、Githubでオープンソースに開発されています\n\nこのブラウザはInternetStrollerベースで開発されています\nInternetStroller並びにiniモジュールは@abatbelieverに帰属します\nSPRインタプリタ並びに'Lumin'はPRM技研に帰属します"
+if stat = $500 : end:end
+stop

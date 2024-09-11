@@ -1,0 +1,20 @@
+*HSC_init
+netinit
+if stat : dialog "HSCサービスを開始できません"
+return
+
+#defcfunc getData str _p1
+	neturl _p1
+	netrequest_get ""
+	repeat
+		netexec res
+		if res > 0 {
+			sdim buf, netgetv_size() //netgetv_requestsize()
+			netgetv_data buf
+			break
+		}
+		if res < 0 : neterror estr : return "HSC-getDataに失敗しました[無効な応答]\n"+estr
+		await 50
+		if cnt=1000 : return "HSC-getDataに失敗しました[タイムアウト]"
+	loop
+return buf

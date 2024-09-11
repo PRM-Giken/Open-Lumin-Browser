@@ -1,0 +1,348 @@
+#include "d3m.hsp"
+
+#include "hspogg.as"
+dmmini
+
+*SPR_Window
+	screen 1,200,100,4:gsel 1,2:title "SPR"
+	tmp=1:DwmSetWindowAttribute hwnd,DWMWA_USE_IMMERSIVE_DARK_MODE,tmp,4
+	WhereIsSS=".SSファイルを選択"
+	input WhereIsSS,200,30
+	objsize 100,40
+	pos 0,30:button gosub "Open SS",*open_spr
+	pos 100,30:button "RUN",*start_up
+	objsize 200,30:pos 0,70:button "閉じる",*stop_spr
+	gsel 0
+	return
+	
+*open_spr
+	dialog "ss",16,""
+	gsel 1:objprm 0,refstr:gsel 0
+	return
+
+*stop_spr
+	gsel 1,-1
+	stop
+	
+*start_up
+	randomize
+	notesel script
+	exist refstr
+	if strsize=-1 {
+		dialog "内部SPRインタプリタはファイルを発見できません",1,"error"
+		stop
+	}
+	noteload refstr
+	script_line=0
+	CurrentReturn=0
+	script_data=""
+	dim ProgramRam,8
+	dim ScriptBit,8
+	dim script_line_return,1024
+
+*pre_run
+		pre_run_restart=0
+		notesel script
+		repeat notemax
+			noteget temp,cnt
+			temp=strtrim(temp,3,'	')
+			temp=strtrim(temp,3,' ')
+			split temp,",",ScriptBit(0)
+			if ScriptBit(0)="#include" {
+				noteadd "",cnt,1
+				notesel temp_script
+				exist ScriptBit(1)
+				if strsize=-1 {
+					dialog "#include error no file.",1,"error"
+					end
+				}
+				noteload ScriptBit(1)
+				repeat notemax
+					notesel temp_script
+					noteget temp,cnt
+					notesel script
+					noteadd temp
+				loop
+				notesel script
+				pre_run_restart=1
+				break
+			}
+			if ScriptBit(0)="#addition" {
+				noteadd "",cnt,1
+				notesel temp_script
+				exist ScriptBit(1)
+				if strsize!-1 {
+					noteload ScriptBit(1)
+					repeat notemax
+						notesel temp_script
+						noteget temp,cnt
+						notesel script
+						noteadd temp
+					loop
+				}
+				notesel script
+				pre_run_restart=1
+				break
+			}
+			if ScriptBit(0)="#var" {
+				notesel script
+				noteadd "",cnt,1
+				var_name=ScriptBit(1)
+				var_number=ScriptBit(2)
+				repeat notemax
+					noteget temp,cnt
+					temp=strtrim(temp,3,'	')
+					temp=strtrim(temp,3,' ')
+					if instr(temp,0,var_name)!-1 {
+						if strmid(temp,0,10)="CurrentRam" or strmid(temp,0,5)="print" or strmid(temp,0,3)="var" {
+							strrep temp,ScriptBit(1),ScriptBit(2)
+						}else{
+							strrep temp,str(ScriptBit(1)),"[ProgramRam("+str(ScriptBit(2))+")]"
+						}
+						noteadd temp,cnt,1
+					}
+				loop
+			}
+		loop
+	if pre_run_restart=1 {
+		goto *pre_run
+	}
+
+	screen 1,640,480:clrobj
+	color 0,0,0
+	boxf
+	pos 0,0
+	gsel 1,0
+
+*main
+	repeat
+		noteget script_data,script_line
+		script_data=strtrim(script_data,3,'	')
+		script_data=strtrim(script_data,3,' ')
+		repeat 8
+			strrep script_data,"[ProgramRam("+cnt+")]",str(ProgramRam(cnt))
+		loop
+		split script_data,",",ScriptBit(0)
+		//カリキュレートプロセス
+		switch ScriptBit(0)
+			//システム関係
+			case "++"
+			ProgramRam(CurrentRam)++
+			swbreak
+			case "--"
+			ProgramRam(CurrentRam)--
+			swbreak
+			case "CurrentRam"
+			CurrentRam=int(ScriptBit(1))
+			swbreak
+			case "="
+			ProgramRam(CurrentRam)=int(ScriptBit(1))
+			swbreak
+			case "**"
+			ProgramRam(CurrentRam)*=int(ScriptBit(1))
+			swbreak
+			case "//"
+			ProgramRam(CurrentRam)/=int(ScriptBit(1))
+			swbreak
+			case "\\"
+			ProgramRam(CurrentRam)=ProgramRam(CurrentRam)\int(ScriptBit(1))
+			swbreak
+			case "var="
+			ProgramRam(CurrentRam)=ProgramRam(int(ScriptBit(1)))
+			swbreak
+			case "var+"
+			ProgramRam(CurrentRam)+=ProgramRam(int(ScriptBit(1)))
+			swbreak
+			case "var-"
+			ProgramRam(CurrentRam)-=ProgramRam(int(ScriptBit(1)))
+			swbreak
+			case "var*"
+			ProgramRam(CurrentRam)*=ProgramRam(int(ScriptBit(1)))
+			swbreak
+			case "var/"
+			ProgramRam(CurrentRam)/=ProgramRam(int(ScriptBit(1)))
+			swbreak
+			case "var\\"
+			ProgramRam(int(ScriptBit(2)))=ProgramRam(CurrentRam)\ProgramRam(int(ScriptBit(1)))
+			swbreak
+
+			//ラベルジャンプ系
+			case "gosub"
+			if CurrentReturn>1024 {
+				dialog "gosubネストが深すぎます"+script_line,1,"error"
+				end
+			}
+			script_line_return(CurrentReturn)=script_line
+			CurrentReturn+=1
+			case "goto"
+			script_line=notefind(ScriptBit(1),0)
+			swbreak
+			case "return"
+			CurrentReturn-=1
+			script_line=script_line_return(CurrentReturn)
+			if CurrentReturn<0 {
+				dialog "gosubしていないのにreturnが実行されました",1,"error"
+				end
+			}
+			swbreak
+
+			//乱数系
+			case "rnd"
+			ProgramRam(CurrentRam)=rnd(int(ScriptBit(1)))
+			swbreak
+
+			//条件分岐系
+			case "if"
+			if ScriptBit(1)=">" {
+				if int(ScriptBit(2))<ProgramRam(CurrentRam) {
+					script_line=notefind(ScriptBit(3),0)
+				}
+			}
+			if ScriptBit(1)="<" {
+				if int(ScriptBit(2))>ProgramRam(CurrentRam) {
+					script_line=notefind(ScriptBit(3),0)
+				}
+			}
+			if ScriptBit(1)="=" {
+				if int(ScriptBit(2))=ProgramRam(CurrentRam) {
+					script_line=notefind(ScriptBit(3),0)
+				}
+			}
+			if ScriptBit(1)="!" {
+				if int(ScriptBit(2))!ProgramRam(CurrentRam) {
+					script_line=notefind(ScriptBit(3),0)
+				}
+			}
+			if ScriptBit(1)="&" {
+				if int(ScriptBit(2))&ProgramRam(CurrentRam) {
+					script_line=notefind(ScriptBit(3),0)
+				}
+			}
+			swbreak
+
+			//セーブ系
+			case "save"
+			notesel output
+			noteadd str(ProgramRam(int(ScriptBit(1))))
+			notesave "output.txt"
+			notesel script
+			swbreak
+
+			//処理停止系
+			case "end"
+			dialog "処理を終了します。",1,"system"
+			gsel 1,-1
+			swbreak
+			case "stop"
+			dialog "実行を停止しました。",0,"system"
+			gsel 1,-1
+			swbreak
+
+			//入力取得系
+			case "getkey"
+			getkey ProgramRam(CurrentRam),int(ScriptBit(1))
+			swbreak
+
+			//新規処理実行系
+			case "start"
+			exec ScriptBit(1),int(ScriptBit(2))
+			swbreak
+
+			//音楽再生系
+			case "play"
+			mmplay int(ScriptBit(1))
+			swbreak
+			case "stop"
+			mmplay int(ScriptBit(1))
+			swbreak
+			case "load"
+			mmload ScriptBit(1),int(ScriptBit(2)),int(ScriptBit(3))
+			swbreak
+
+			//バッファウィンドウ関係
+			case "buffer"
+			buffer int(ScriptBit(1)),int(ScriptBit(2)),int(ScriptBit(3)),int(ScriptBit(4))
+			swbreak
+			case "screen"
+			screen int(ScriptBit(1)),int(ScriptBit(2)),int(ScriptBit(3)),int(ScriptBit(4)),int(ScriptBit(5)),int(ScriptBit(6)),int(ScriptBit(7)),int(ScriptBit(8))
+			swbreak
+			case "gsel"
+			gsel int(ScriptBit(1)),int(ScriptBit(2))
+			swbreak
+
+			//拡張音楽再生系
+			case "dmmplay"
+			dmmplay int(ScriptBit(1))
+			swbreak
+			case "dmmstop"
+			dmmstop int(ScriptBit(1))
+			swbreak
+			case "dmmload"
+			dmmload ScriptBit(1),int(ScriptBit(2)),int(ScriptBit(3))
+			swbreak
+
+		swend
+		switch ScriptBit(0)
+			//基本描画処理系
+			case "print"
+			if ginfo_cy>480 {
+				color 0,0,0
+				boxf
+				pos 0,0
+				color 255,255,255
+			}
+			mes str(ProgramRam(int(ScriptBit(1))))
+			swbreak
+			case "color"
+			color int(ScriptBit(1)),int(ScriptBit(2)),int(ScriptBit(3))
+			swbreak
+			case "line"
+			line int(ScriptBit(1)),int(ScriptBit(2)),int(ScriptBit(3)),int(ScriptBit(4))
+			swbreak
+			case "pos"
+			pos int(ScriptBit(1)),int(ScriptBit(2))
+			swbreak
+			case "pset"
+			pset int(ScriptBit(1)),int(ScriptBit(2))
+			swbreak
+			case "boxf"
+			boxf int(ScriptBit(1)),int(ScriptBit(2)),int(ScriptBit(3)),int(ScriptBit(4))
+			swbreak
+			case "oval"
+			circle int(ScriptBit(1)),int(ScriptBit(2)),int(ScriptBit(3)),int(ScriptBit(4)),int(ScriptBit(5))
+			swbreak
+			case "circle"
+			circle int(ScriptBit(1))-int(ScriptBit(3)),int(ScriptBit(2))-int(ScriptBit(3)),int(ScriptBit(1))+int(ScriptBit(3)),int(ScriptBit(2))+int(ScriptBit(3)),int(ScriptBit(4))
+			swbreak
+			case "printf"
+			mes ScriptBit(1)
+			swbreak
+			case "redraw"
+			redraw int(ScriptBit(1))
+			swbreak
+
+			//画像系
+			case "picload"
+			picload ScriptBit(1)
+			swbreak
+			case "gcopy"
+			gcopy int(ScriptBit(1)),int(ScriptBit(2)),int(ScriptBit(3)),int(ScriptBit(4)),int(ScriptBit(5))
+			swbreak
+			case "gmode"
+			gmode int(ScriptBit(1)),int(ScriptBit(2)),int(ScriptBit(3)),int(ScriptBit(4))
+			swbreak
+
+		swend
+		if ScriptBit(0)="await" {
+			await int(ScriptBit(1))
+		}
+		script_line++
+		if script_line>notemax {
+			break
+		}
+	loop
+	dialog "実行終了",0,"system"
+	gsel 1,-1
+	stop
+	
+	//supe program runner
