@@ -1,0 +1,56 @@
+#packopt icon "Logo.ico"
+#packopt version "Build.dat"
+
+#include "hsp3utf.as"
+#include "user32.as"
+#include "shell32.as"
+#include "hspinet.as"
+#include "hspogg.as"
+
+//init
+//---------------------------------------------------------//
+#define ApplicationName "Open Lumin WebBrowser"
+#define ApplicationVersion "Beta 2 ["+__date__+" "+__time__+"]"
+#define InternalVersion "Beta2"
+if __hspver__!=14089{dialog "HSP3.7β9でビルド必須,最適に動作しません"}
+
+#include "init.hsp"
+#include "Exist.hsp"
+#include "Loadini.hsp"
+Loadini "Config.ini"
+onerror gosub *ERROR
+
+//WebView Load
+//---------------------------------------------------------//
+#include "WebView_Config.hsp"
+
+//HSC
+//---------------------------------------------------------//
+gosub *HSC_init
+
+//Graphic
+//---------------------------------------------------------//
+#include "Graphic.hsp"
+#include "Rect.hsp"
+stop
+
+//Event
+//---------------------------------------------------------//
+#include "EVENT_WM.hsp"
+#include "EVENT_CMD.hsp"
+#include "EVENT_Tab.hsp"
+#include "EVENT_WebView.hsp"
+#include "EVENT_USER.hsp"
+
+//追加機能
+//---------------------------------------------------------//
+#include "SPR.hsp"
+#include "LS.hsp"
+#include "HSC_init.hsp"
+
+*Close
+if wparam!=0{gsel wparam,-1:stop}
+end:end
+
+*ERROR
+	end:end

@@ -1,0 +1,19 @@
+*EVENT_GetTexts
+	tmp=getData("https://prm-giken.github.io/meta/openrumin_text.txt")
+	strrep tmp,"@","\n"
+	dialog tmp
+	sdim tmp
+	return
+
+*EVENT_Update
+	tmp=getData("https://prm-giken.github.io/meta/openrumin_update.txt")
+	if instr(tmp,0,InternalVersion)=0{dialog "最新と確認されました。":sdim tmp:return}
+	if instr(tmp,0,"HSC-getData")=0{dialog tmp:sdim tmp:return}
+	dialog "最新版があります！\n更新しますか?\n\n現在:"+InternalVersion+"\n最新:"+tmp
+	if stat=7{return}
+	sdim tmp
+	tmp=getData("https://prm-giken.github,io/meta/openrumin_latest.zip")
+	bsave "Latest_Rumin.zip",tmp
+	sdim tmp
+	dialog "'Latest_Rumin.zip'を受信しました。"
+	return

@@ -1,0 +1,54 @@
+*LS_Window
+	dialog "ls",16,""
+	if stat=0{dialog "キャンセルされました":stop}
+	notesel lsbuffer
+	noteload refstr
+	LS_Line=0
+	goto *LS_RUN
+
+*LS_RUN
+	await 1
+	sdim tmp:sdim LSText
+
+	if LS_Line>notemax{noteunsel:dialog "@LuminScriptは正常に終了しました。@":stop}
+	noteget tmp,LS_Line
+	LS_Line++
+	split tmp," ",Command,tmp
+	
+	repeat (length(tmp))
+		LSText+=tmp(cnt)+" "
+	loop
+	
+	split LSText,",",LS_Func
+	strrep LSText,"@","\n"
+	strrep LS_Func(0),"@","\n"
+
+	if Command="appear" {dialog LSText}
+	if Command="select" and length(LS_Func)=3{ 
+		sdim LS_Search_Sel
+		dialog ""+LS_Func(0),2,"Lumin Script"
+		if stat=6{LS_Search_Sel=LS_Func(1)}else{LS_Search_Sel=LS_Func(2)}
+		gosub *LS_Search
+		}
+	if Command="navurl" {
+		SetWindowTextA hEditUrl, varptr(LSText)
+		gosub *CMD_NAVIGATE
+		}
+	if Command="geturl" {
+		dialog getData(str(LSText)),0,"このURLより取得されました["+LSText+"] Enterを押して閉じます"
+		}
+/*
+	if Command="savurl" {
+		tmp=getData(str(LS_Func(0)))
+		bsave LS_Func(1),tmp
+		}
+*/
+	goto *LS_RUN
+
+*LS_Search
+	repeat notemax
+		noteget tmp,cnt
+		if instr(tmp,0,"$"+LS_Search_Sel)=0{LS_Line=(cnt+1):break}
+		if cnt=notemax{dialog "構文エラー\n移動先が見つかりませんでした["+str(LS_Line)+"行目]":LS_Line=notemax+10:break}
+	loop
+	return
