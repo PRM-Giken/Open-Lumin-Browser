@@ -7,13 +7,13 @@
 
 *EVENT_Update
 	tmp=getData("https://prm-giken.github.io/meta/openrumin_update.txt")
-	if instr(tmp,0,InternalVersion)=0{dialog "ÅV‚ÆŠm”F‚³‚ê‚Ü‚µ‚½B":sdim tmp:return}
+	if instr(tmp,0,InternalVersion)=0{dialog "æœ€æ–°ã¨ç¢ºèªã•ã‚Œã¾ã—ãŸã€‚":sdim tmp:return}
 	if instr(tmp,0,"HSC-getData")=0{dialog tmp:sdim tmp:return}
-	dialog "ÅV”Å‚ª‚ ‚è‚Ü‚·I\nXV‚µ‚Ü‚·‚©?\n\nŒ»İ:"+InternalVersion+"\nÅV:"+tmp
+	dialog "æœ€æ–°ç‰ˆãŒã‚ã‚Šã¾ã™ï¼\næ›´æ–°ã—ã¾ã™ã‹?\n\nç¾åœ¨:"+InternalVersion+"\næœ€æ–°:"+tmp
 	if stat=7{return}
 	sdim tmp
-	tmp=getData("https://prm-giken.github,io/meta/openrumin_latest.zip")
+	tmp=getData("https://prm-giken.github.io/meta/openrumin_latest.zip")
 	bsave "Latest_Rumin.zip",tmp
 	sdim tmp
-	dialog "'Latest_Rumin.zip'‚ğóM‚µ‚Ü‚µ‚½B"
+	dialog "'Latest_Rumin.zip'ã‚’å—ä¿¡ã—ã¾ã—ãŸã€‚"
 	return
