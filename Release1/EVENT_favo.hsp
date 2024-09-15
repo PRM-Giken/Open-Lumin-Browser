@@ -1,0 +1,59 @@
+*CMD_Favo_Regester
+	p1 = (GetWindowTextLengthW(hEditUrl) + 1) * 2
+	sdim bufTmp, p1
+	sdim FavTitle
+	GetWindowText hEditUrl, varptr(bufTmp), p1
+	FavTitle="サイト:"+bufTmp
+
+	screen 2,300,200,8:title "ふぁぼ登録"
+	DwmSetWindowAttribute hwnd,DWMWA_USE_IMMERSIVE_DARK_MODE,tmp,4
+	pos 20,20:mes "URL =>":pos 70,20:input tmp,210,20,0:objenable 0,0:objprm 0,bufTmp
+	pos 20,50:mes "ﾀｲﾄﾙ=>":pos 70,50:input FavTitle,210,20,50
+
+	pos 40,120:objsize 220,50:button gosub "ふぁぼ登録",*CMD_Favo_Regester_Do
+	return
+
+*CMD_Favo_Regester_Do
+	p1 = (GetWindowTextLengthW(hEditUrl) + 1) * 2
+	sdim bufTmp, p1
+	GetWindowText hEditUrl, varptr(bufTmp), p1
+
+	exist "favos.txt"
+	if strsize=-1{dialog "ふぁぼリスト'favos.txt'が見つかりません":gsel 2,-1:return}
+	
+	notesel favosbuf
+	noteload "favos.txt"
+	noteadd ""+FavTitle+","+bufTmp,-1
+	notesave "favos.txt"
+	return
+
+*CMD_Favo_Load
+	screen 2,300,200,8:title "ふぁぼ一覧"
+	DwmSetWindowAttribute hwnd,DWMWA_USE_IMMERSIVE_DARK_MODE,tmp,4
+	
+	exist "favos.txt"
+	if strsize=-1{dialog "ふぁぼリスト'favos.txt'が見つかりません":gsel 2,-1:return}
+	
+	sdim FavList
+	notesel favosbuf
+	noteload "favos.txt"
+	repeat notemax
+		noteget tmp,cnt
+		split tmp,",",tmp//名前+URL
+		FavList+=tmp(0)+"\n"
+		FavURL(cnt)=tmp(1)
+	loop
+	
+	sdim favosbuf
+	FavList+="[EOF]"
+	FavURL(notemax+1)=""
+	
+	objsize 300,180:combox FavListSel,,FavList
+	objsize 300,20:button gosub "新しいタブで開く",*CMD_Favo_Load_Do
+	return
+
+*CMD_Favo_Load_Do
+	if FavURL(FavListSel)=""{return}
+	SetWindowTextA hEditUrl, varptr(FavURL(FavListSel))
+	gosub *CMD_NAVIGATE
+	return

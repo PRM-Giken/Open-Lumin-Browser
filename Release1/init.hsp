@@ -1,0 +1,5 @@
+#uselib "gdi32.dll"
+#uselib "user32.dll"
+#func SetProcessDPIAware "SetProcessDPIAware"
+
+screen 0,640,480,0,(ginfo(20)/2-320),(ginfo(21)/2-240):title ApplicationName
